@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>E3 CLASSIC CASE NOTE — Fillable (Offline)</title>
+  <style>
+    :root{
+      --bg:#ffffff; --ink:#0f172a; --muted:#334155; --line:#0f172a; --accent:#0ea5e9;
+      --panel:#f8fafc; --radius:12px; --shadow:0 8px 20px rgba(0,0,0,.07);
+    }
+    html,body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui, -apple-system, Segoe UI, Inter, Roboto, Arial, sans-serif;margin:0}
+    .container{max-width:960px;margin:24px auto;padding:0 16px 120px}
+    .toolbar{position:sticky;top:0;z-index:10;display:flex;gap:8px;flex-wrap:wrap;background:rgba(248,250,252,.9);backdrop-filter:saturate(160%) blur(6px);padding:10px 12px;border-bottom:1px solid #e5e7eb}
+    .toolbar button{border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+    .toolbar input[type=file]{display:none}
+    .header{text-align:center;font-weight:800;font-size:18px;margin:18px 0 8px}
+    .field-row{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin:8px 0}
+    .field{display:flex;align-items:flex-end;gap:8px;min-width:220px;flex:1}
+    .label{font-weight:700;min-width:120px}
+    .line-input{flex:1;min-width:120px;border:none;border-bottom:1px solid var(--line);padding:2px 4px;outline:none;background:transparent}
+    .section{margin:20px 0;border-top:2px solid var(--line);padding-top:12px}
+    .section-title{font-weight:800;margin-bottom:10px;font-size:16px}
+    .checkgrid{display:grid;grid-template-columns:1fr auto;gap:8px 16px}
+    .checkrow{display:contents}
+    .checklabel{padding:4px 0}
+    .choices{display:flex;gap:14px;align-items:center;justify-self:end}
+    .choices label{display:inline-flex;gap:6px;align-items:center}
+    textarea{width:100%;min-height:84px;padding:8px;border:1px solid #0f172a;border-radius:8px;background:#fff}
+    .sigrow{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;margin:8px 0}
+    .sigfield{display:flex;gap:8px;align-items:flex-end;flex:1}
+    .muted{color:#64748b;font-style:italic;margin:12px 0}
+    .help{margin:12px 0 0;color:#475569}
+    .footer-space{height:64px}
+    @media print {
+      .toolbar{display:none !important}
+      body{margin:0}
+      .container{padding-bottom:0}
+      button, .no-print{display:none !important}
+      input, select, textarea{border-color:transparent;border-bottom:1px solid #000 !important}
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar no-print">
+    <button id="btnSaveJson" title="Download a .json of your entries">Save JSON</button>
+    <label for="fileLoadJson" class="button" style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)">Load JSON</label>
+    <input id="fileLoadJson" type="file" accept=".json,application/json" />
+    <button id="btnDownloadHTML" title="Download a 'flattened' filled HTML (no scripts)">Download Filled HTML</button>
+    <button id="btnExportRTF" title="Export a structured Word-compatible .rtf">Export Word (RTF)</button>
+    <button onclick="window.print()">Print / Save as PDF</button>
+    <div class="help">Offline: No data leaves this file. Everything runs locally.</div>
+  </div>
+  <div class="container">
+    <div class="header">E3 CLASSIC CASE NOTE</div>
+    <form id="caseForm" autocomplete="off">
+      <!-- Top fields -->
+      <div class="field-row">
+        <div class="field">
+          <label class="label" for="participant_name">Name:</label>
+          <input id="participant_name" name="participant_name" class="line-input" type="text" />
+        </div>
+        <div class="field">
+          <label class="label" for="participant_id">ID #:</label>
+          <input id="participant_id" name="participant_id" class="line-input" type="text" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="label" for="dx_codes">Diagnosis Codes:</label>
+          <input id="dx_codes" name="dx_codes" class="line-input" type="text" />
+        </div>
+        <div class="field">
+          <label class="label" for="note_date">Date:</label>
+          <input id="note_date" name="note_date" class="line-input" type="date" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="label" for="time_in">Time In:</label>
+          <input id="time_in" name="time_in" class="line-input" type="time" />
+        </div>
+        <div class="field">
+          <label class="label" for="time_out">Time Out:</label>
+          <input id="time_out" name="time_out" class="line-input" type="time" />
+        </div>
+        <div class="field">
+          <label class="label" for="total_units">Total Units:</label>
+          <input id="total_units" name="total_units" class="line-input" type="number" min="0" step="1" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" style="flex:1 1 100%">
+          <label class="label" for="goals">Goals:</label>
+          <input id="goals" name="goals" class="line-input" type="text" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" style="flex:1 1 100%">
+          <label class="label" for="todays_focus">Today's Focus:</label>
+          <input id="todays_focus" name="todays_focus" class="line-input" type="text" />
+        </div>
+      </div>
+
+      <!-- Work Habits -->
+      <div class="section" id="sec_work">
+        <div class="section-title">Work Habits:</div>
+        <div class="checkgrid">
+          <div class="checkrow">
+            <div class="checklabel">Attendance: Correct day and time?</div>
+            <div class="choices">
+              <label><input type="radio" name="wh_attendance" value="Yes" /> Yes</label>
+              <label><input type="radio" name="wh_attendance" value="No" /> No</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Excessive absences?</div>
+            <div class="choices">
+              <label><input type="radio" name="wh_absences" value="Yes" /> Yes</label>
+              <label><input type="radio" name="wh_absences" value="No" /> No</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Timeliness: Arrived on time?</div>
+            <div class="choices">
+              <label><input type="radio" name="wh_timeliness" value="Yes" /> Yes</label>
+              <label><input type="radio" name="wh_timeliness" value="No" /> No</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Hygiene: Participant was appropriately groomed?</div>
+            <div class="choices">
+              <label><input type="radio" name="wh_hygiene" value="Yes" /> Yes</label>
+              <label><input type="radio" name="wh_hygiene" value="No" /> No</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Dress: Participant was appropriately dressed?</div>
+            <div class="choices">
+              <label><input type="radio" name="wh_dress" value="Yes" /> Yes</label>
+              <label><input type="radio" name="wh_dress" value="No" /> No</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Attitude: Participant exhibited positive attitude?</div>
+            <div class="choices">
+              <label><input type="radio" name="wh_attitude" value="Yes" /> Yes</label>
+              <label><input type="radio" name="wh_attitude" value="No" /> No</label>
+            </div>
+          </div>
+        </div>
+        <label class="label" for="wh_comments">Comments:</label>
+        <textarea id="wh_comments" name="wh_comments" placeholder="Observations on work habits..."></textarea>
+      </div>
+
+      <!-- Preparatory Goals -->
+      <div class="section" id="sec_prep">
+        <div class="section-title">Preparatory Goals:</div>
+        <div class="checkgrid">
+          <div class="checkrow">
+            <div class="checklabel">Attention Span: Participant had adequate attention span for tasks?</div>
+            <div class="choices">
+              <label><input type="radio" name="pg_attention" value="Yes" /> Yes</label>
+              <label><input type="radio" name="pg_attention" value="NI" /> NI</label>
+              <label><input type="radio" name="pg_attention" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Following Directions: Participant followed simple instructions?</div>
+            <div class="choices">
+              <label><input type="radio" name="pg_following" value="Yes" /> Yes</label>
+              <label><input type="radio" name="pg_following" value="NI" /> NI</label>
+              <label><input type="radio" name="pg_following" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Task Completion: Participant stayed on task?</div>
+            <div class="choices">
+              <label><input type="radio" name="pg_task" value="Yes" /> Yes</label>
+              <label><input type="radio" name="pg_task" value="NI" /> NI</label>
+              <label><input type="radio" name="pg_task" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Motor Skills: Participant exhibits improvement in motor skills?</div>
+            <div class="choices">
+              <label><input type="radio" name="pg_motor" value="Yes" /> Yes</label>
+              <label><input type="radio" name="pg_motor" value="NI" /> NI</label>
+              <label><input type="radio" name="pg_motor" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Problem Solving: Participant exhibits ability to solve presented problems</div>
+            <div class="choices">
+              <label><input type="radio" name="pg_problem" value="Yes" /> Yes</label>
+              <label><input type="radio" name="pg_problem" value="NI" /> NI</label>
+              <label><input type="radio" name="pg_problem" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Safety: Participant exhibited ability to follow safety procedures</div>
+            <div class="choices">
+              <label><input type="radio" name="pg_safety" value="Yes" /> Yes</label>
+              <label><input type="radio" name="pg_safety" value="NI" /> NI</label>
+              <label><input type="radio" name="pg_safety" value="N/A" /> N/A</label>
+            </div>
+          </div>
+        </div>
+        <label class="label" for="pg_comments">Comments:</label>
+        <textarea id="pg_comments" name="pg_comments" placeholder="Notes on preparatory goals..."></textarea>
+      </div>
+
+      <!-- Interests / Abilities -->
+      <div class="section" id="sec_interests">
+        <div class="section-title">Interests / Abilities:</div>
+        <div class="checkgrid">
+          <div class="checkrow">
+            <div class="checklabel">Interests: Participant has increased awareness of areas of interest</div>
+            <div class="choices">
+              <label><input type="radio" name="ia_interests" value="Yes" /> Yes</label>
+              <label><input type="radio" name="ia_interests" value="NI" /> NI</label>
+              <label><input type="radio" name="ia_interests" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Abilities: Participant shows increased awareness of talents / abilities</div>
+            <div class="choices">
+              <label><input type="radio" name="ia_abilities" value="Yes" /> Yes</label>
+              <label><input type="radio" name="ia_abilities" value="NI" /> NI</label>
+              <label><input type="radio" name="ia_abilities" value="N/A" /> N/A</label>
+            </div>
+          </div>
+          <div class="checkrow">
+            <div class="checklabel">Transferrable Skills: Participant shows understanding of transferrable skills</div>
+            <div class="choices">
+              <label><input type="radio" name="ia_transfer" value="Yes" /> Yes</label>
+              <label><input type="radio" name="ia_transfer" value="NI" /> NI</label>
+              <label><input type="radio" name="ia_transfer" value="N/A" /> N/A</label>
+            </div>
+          </div>
+        </div>
+        <label class="label" for="ia_comments">Comments:</label>
+        <textarea id="ia_comments" name="ia_comments" placeholder="Notes on interests and abilities..."></textarea>
+      </div>
+
+      <!-- Signature & staffing -->
+      <div class="section" id="sec_signature">
+        <div class="muted">
+          "I have worked with this program participant during classroom and / or production time and have made the above observations."
+        </div>
+        <div class="sigrow">
+          <div class="sigfield">
+            <label class="label" for="staff_present">Staff Present:</label>
+            <input id="staff_present" name="staff_present" class="line-input" type="text" />
+          </div>
+          <div class="sigfield">
+            <label class="label" for="signature">Signature:</label>
+            <input id="signature" name="signature" class="line-input" type="text" placeholder="Type full name" />
+          </div>
+          <div class="sigfield" style="max-width:240px">
+            <label class="label" for="signature_date">Date:</label>
+            <input id="signature_date" name="signature_date" class="line-input" type="date" />
+          </div>
+        </div>
+        <div class="field-row" style="margin-top:8px">
+          <div class="field" style="flex:1">
+            <label class="label" for="staff_assigned">Staff Assigned (Group):</label>
+            <input id="staff_assigned" name="staff_assigned" class="line-input" type="text" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label class="label" for="num_staff">Number of staff on group:</label>
+            <input id="num_staff" name="num_staff" class="line-input" type="number" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label class="label" for="num_students">Number of Students in Group:</label>
+            <input id="num_students" name="num_students" class="line-input" type="number" min="0" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-space"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('caseForm');
+    const fileInput = document.getElementById('fileLoadJson');
+    const btnSaveJson = document.getElementById('btnSaveJson');
+    const btnDownloadHTML = document.getElementById('btnDownloadHTML');
+    const btnExportRTF = document.getElementById('btnExportRTF');
+
+    const today = new Date().toISOString().slice(0,10);
+    if(!document.getElementById('note_date').value) document.getElementById('note_date').value = today;
+    if(!document.getElementById('signature_date').value) document.getElementById('signature_date').value = today;
+
+    function formToJSON(formEl){
+      const data = {};
+      const fd = new FormData(formEl);
+      for (const [k, v] of fd.entries()) {
+        if(data[k] !== undefined) {
+          if(!Array.isArray(data[k])) data[k] = [data[k]];
+          data[k].push(v);
+        } else {
+          data[k] = v;
+        }
+      }
+      return { _meta: { generated_at: new Date().toISOString(), version: 'e3-fillable-v1' }, fields: data };
+    }
+
+    function jsonToForm(obj){
+      if(!obj || !obj.fields) return;
+      const data = obj.fields;
+      for(const [name, value] of Object.entries(data)){
+        const els = form.querySelectorAll('[name="' + name + '"]');
+        if(!els.length) continue;
+        const vals = Array.isArray(value) ? value : [value];
+        els.forEach(el => {
+          if(el.type === 'radio' || el.type === 'checkbox'){ el.checked = vals.includes(el.value); }
+          else { el.value = vals[0] ?? ''; }
+        });
+      }
+    }
+
+    function download(filename, text){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], {type:'application/octet-stream'}));
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }
+
+    btnSaveJson.addEventListener('click', () => {
+      const payload = formToJSON(form);
+      download('e3_case_note_' + today + '.json', JSON.stringify(payload, null, 2));
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{ jsonToForm(JSON.parse(reader.result)); alert('Loaded entries from JSON.'); }
+        catch(err){ alert('Could not parse JSON file.'); }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    btnDownloadHTML.addEventListener('click', () => {
+      const flat = flattenToStaticHTML();
+      download('E3_Case_Note_Filled_' + today + '.html', flat);
+    });
+
+    btnExportRTF.addEventListener('click', () => {
+      const rtf = buildRTF();
+      download('E3_Case_Note_' + today + '.rtf', rtf);
+    });
+
+    function flattenToStaticHTML(){
+      const clone = document.documentElement.cloneNode(true);
+      clone.querySelectorAll('script,.toolbar,.no-print').forEach(n => n.remove());
+      const cForm = clone.querySelector('#caseForm');
+      if(!cForm) return document.documentElement.outerHTML;
+      const handledRadio = new Map();
+      cForm.querySelectorAll('input, textarea, select').forEach(el => {
+        if(el.type === 'radio' || el.type === 'checkbox'){
+          if(el.type === 'radio'){
+            if(handledRadio.has(el.name)) return;
+            const chosen = cForm.querySelector('input[name="' + el.name + '"]:checked');
+            const out = document.createElement('span');
+            out.textContent = chosen ? chosen.value : '—';
+            out.style.fontWeight = '600';
+            el.closest('.choices') && el.closest('.choices').appendChild(out);
+            handledRadio.set(el.name, true);
+          }
+          return;
+        } else if(el.tagName === 'TEXTAREA'){
+          const pre = document.createElement('div');
+          pre.style.whiteSpace = 'pre-wrap';
+          pre.style.minHeight = '60px';
+          pre.style.border = '1px solid #000';
+          pre.style.padding = '8px';
+          pre.textContent = el.value || '';
+          el.replaceWith(pre);
+          return;
+        } else {
+          const span = document.createElement('span');
+          span.style.borderBottom = '1px solid #000';
+          span.style.padding = '2px 4px';
+          span.style.minWidth = '120px';
+          span.style.display = 'inline-block';
+          span.textContent = el.value || '';
+          el.replaceWith(span);
+        }
+      });
+      const head = clone.querySelector('head'); const title = head && head.querySelector('title');
+      if(title) title.textContent = 'E3 CLASSIC CASE NOTE — Filled';
+      return '<!doctype html>\n' + clone.outerHTML;
+    }
+
+    function rtfEscape(s){
+      return String(s).replace(/[\\{}]/g, function(m){ return m === '\\' ? '\\\\' : (m === '{' ? '\\{' : '\\}'); })
+                      .replace(/\n/g, '\\line ');
+    }
+    function rtfSection(title, lines){
+      var out = '\n\\pard\\sb120\\sa60\\b ' + rtfEscape(title) + ' \\b0\\par\n';
+      for(var i=0;i<lines.length;i++){
+        var ln = lines[i];
+        if(Array.isArray(ln)){ out += '\\pard\\sb0\\sa0\\tx2400 \\b ' + rtfEscape(ln[0]) + ': \\b0 ' + rtfEscape(ln[1]||'') + ' \\par\n'; }
+        else if(typeof ln === 'string'){ out += '\\pard ' + rtfEscape(ln) + ' \\par\n'; }
+      }
+      return out;
+    }
+    function buildRTF(){
+      function val(id){ var el = document.getElementById(id); return el ? (el.value || '') : ''; }
+      function radio(name){ var el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+      var rtf = '{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Segoe UI;}{\\f1 Calibri;}{\\f2 Courier New;}}';
+      rtf += '{\\colortbl;\\red15\\green23\\blue42;}';
+      rtf += '\\fs28\\b E3 CLASSIC CASE NOTE \\b0\\fs22\\par\n';
+      rtf += rtfSection('Participant', [
+        ['Name', val('participant_name')],
+        ['ID #', val('participant_id')],
+        ['Diagnosis Codes', val('dx_codes')],
+        ['Date', val('note_date')],
+        ['Time In', val('time_in')],
+        ['Time Out', val('time_out')],
+        ['Total Units', val('total_units')],
+        ['Goals', val('goals')],
+        ["Today\'s Focus", val('todays_focus')]
+      ]);
+      rtf += rtfSection('Work Habits', [
+        ['Attendance (correct day/time)', radio('wh_attendance')],
+        ['Excessive absences', radio('wh_absences')],
+        ['Timeliness', radio('wh_timeliness')],
+        ['Hygiene', radio('wh_hygiene')],
+        ['Dress', radio('wh_dress')],
+        ['Attitude', radio('wh_attitude')],
+        'Comments:',
+        val('wh_comments')
+      ]);
+      rtf += rtfSection('Preparatory Goals', [
+        ['Attention Span', radio('pg_attention')],
+        ['Following Directions', radio('pg_following')],
+        ['Task Completion', radio('pg_task')],
+        ['Motor Skills', radio('pg_motor')],
+        ['Problem Solving', radio('pg_problem')],
+        ['Safety', radio('pg_safety')],
+        'Comments:',
+        val('pg_comments')
+      ]);
+      rtf += rtfSection('Interests / Abilities', [
+        ['Interests', radio('ia_interests')],
+        ['Abilities', radio('ia_abilities')],
+        ['Transferrable Skills', radio('ia_transfer')],
+        'Comments:',
+        val('ia_comments')
+      ]);
+      rtf += rtfSection('Signature & Staffing', [
+        ['Staff Present', val('staff_present')],
+        ['Signature (typed)', val('signature')],
+        ['Date', val('signature_date')],
+        ['Staff Assigned (Group)', val('staff_assigned')],
+        ['# Staff on Group', val('num_staff')],
+        ['# Students in Group', val('num_students')]
+      ]);
+      rtf += '}';
+      return rtf;
+    }
+  </script>
+</body>
+</html>
